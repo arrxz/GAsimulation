@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab Algoritma Genetika</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div class="app">
+  <nav class="nav" aria-label="Halaman">
+    <button class="nb" data-page="kata" aria-label="Pencocokan kata"><span class="aa">Aa</span><span class="tipx">Pencocokan kata</span></button>
+    <button class="nb" data-page="puncak" aria-label="Puncak palsu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M2 20l6.5-11 4 6.5 3-4.5L22 20z"/><path d="M15.5 6.5l1-3 1 3"/></svg><span class="tipx">Puncak palsu (local optimum)</span></button>
+    <button class="nb" data-page="kepiting" aria-label="Robot kepiting"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><ellipse cx="12" cy="14" rx="5.5" ry="3.6"/><path d="M6.6 13.2L3 11.5M6.6 15.2L3 16M7.5 16.8L4.6 19.6M17.4 13.2l3.6-1.7M17.4 15.2l3.6.8M16.5 16.8l2.9 2.8M9.5 10.8L7.4 7.6M14.5 10.8l2.1-3.2"/><path d="M5.6 6.4a2 2 0 1 1 3.1 1.5M18.4 6.4a2 2 0 1 0-3.1 1.5"/></svg><span class="tipx">Gaya jalan robot kepiting</span></button>
+    <button class="nb" id="helpBtn" aria-label="Panduan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg><span class="tipx">Panduan</span></button>
+  </nav>
+
+  <main class="win">
+  <!-- ================= KATA ================= -->
+  <section class="page" id="page-kata" hidden>
+    <header class="ph">
+      <h1>Pencocokan Kata</h1><span class="tag">Modul sesi 9</span>
+      <form class="tools" id="f">
+        <label class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="text" id="target" value="GENETIKA" maxlength="24" autocomplete="off" spellcheck="false" aria-label="Kata target" placeholder="Kata target"></label>
+        <button type="submit" class="pri" id="play" title="Spasi: mulai/jeda">Mulai</button>
+        <button type="button" class="rb" id="step" title="Langkah 1 generasi (panah kanan)" aria-label="Langkah 1 generasi"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5v14l9-7z"/><rect x="16" y="5" width="2.5" height="14" rx="1"/></svg></button>
+        <button type="button" class="rb" id="reset" title="Reset (R)" aria-label="Reset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.6"/><path d="M4 4v4.6h4.6"/></svg></button>
+        <div class="seg" role="radiogroup" aria-label="Kecepatan">
+          <label><input type="radio" name="spd" value="lambat" checked><span>Lambat</span></label>
+          <label><input type="radio" name="spd" value="sedang"><span>Sedang</span></label>
+          <label><input type="radio" name="spd" value="cepat"><span>Cepat</span></label>
+        </div>
+        <span class="err" id="err"></span>
+      </form>
+    </header>
+    <div class="krow1">
+      <div class="stat kbest"><div class="sl" id="bestcap">Kromosom terbaik saat ini</div><div class="best" id="best"></div></div>
+      <div class="stat"><div class="sl"><span class="ico" style="background:rgba(10,132,255,.25);color:#5fb0ff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 17l5-5 4 4 7-8"/></svg></span>Generasi</div><b id="sGen">–</b><small>satu siklus evolusi</small></div>
+      <div class="stat"><div class="sl"><span class="ico" style="background:rgba(255,159,10,.22);color:#ffb340"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 3v18M5 14l7 7 7-7"/></svg></span>Fitness terbaik</div><b id="sBest">–</b><small>rata-rata <span id="sAvg">–</span> huruf salah</small></div>
+      <div class="stat"><div class="sl"><span class="ico" style="background:rgba(48,209,88,.22);color:var(--ok)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12l5 5 9-10"/></svg></span>Kemiripan</div><b id="sSim">–</b><small>dengan target</small><svg class="ring" viewBox="0 0 40 40"><circle class="bg" cx="20" cy="20" r="16"/><circle class="fg" id="ring" cx="20" cy="20" r="16" stroke-dashoffset="100.5"/></svg></div>
+      <div class="stat"><div class="sl"><span class="ico" style="background:rgba(255,55,95,.22);color:#ff7a98"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2 .8 3 3 3 6"/></svg></span>Dievaluasi</div><b id="sEval">0</b><small>individu dinilai</small></div>
+    </div>
+    <div class="krow2">
+      <section class="card" id="stagecard">
+        <div class="hd"><h2>Panggung reproduksi</h2><ol id="steps"></ol></div>
+        <div id="info" hidden title="Klik untuk menutup"></div>
+        <div id="narr" class="narr">Tekan <b>Mulai</b> untuk menjalankan evolusi otomatis, atau tombol langkah untuk maju satu generasi.</div>
+        <div class="stagewrap grow" id="stagewrap"><div class="stage" id="stage"></div></div>
+        <div class="meter"><div class="a" id="mA">Induk 1</div><div class="b" id="mB">Induk 2</div><div class="c" id="mC">Mutasi</div><span class="needle" id="needle"><b id="rv">r</b></span></div>
+        <div class="foot"><div id="verdict"></div><div class="legend"><span><i style="background:var(--p1)"></i>Induk 1</span><span><i style="background:var(--p2)"></i>Induk 2</span><span><i style="background:var(--mu)"></i>Mutasi</span><span><i style="background:var(--ok)"></i>Cocok</span></div></div>
+        <div class="manual"><button type="button" id="mate">Kawinkan induk pilihan</button><span id="mhint"></span></div>
+      </section>
+      <section class="card">
+        <div class="hd"><h2>Populasi (12 terbaik)</h2><span class="note">★ elit · klik baris = pilih induk</span></div>
+        <ul id="list" class="grow"></ul>
+        <div class="fig" id="heatfig"><canvas id="heat"></canvas></div>
+        <p class="note">Peta seluruh populasi (terbaik di kiri atas): oranye jauh dari target, hijau dekat.</p>
+      </section>
+      <div class="col">
+        <section class="card grow">
+          <div class="hd"><h2 id="tabtitle">Fitness per generasi</h2><div class="tabs"><button type="button" class="on" data-p="pChart">Grafik</button><button type="button" data-p="pLog">Log</button><button type="button" data-p="pCode">Kode</button></div></div>
+          <div class="pane grow" id="pChart"><div class="legend"><span><i style="background:var(--ok)"></i>Fitness terbaik</span><span><i style="background:var(--mut)"></i>Rata-rata</span></div><div class="fig grow" id="chartfig"><svg id="chart"></svg><div class="vline" id="vline"></div><div class="tip" id="tip"></div></div></div>
+          <div class="pane grow" id="pLog" hidden><ul id="log" class="grow"></ul></div>
+          <div class="pane grow codepane" id="pCode" hidden>
+            <table><thead><tr><th>Tahap</th><th>Baris di modul</th></tr></thead><tbody>
+              <tr><td>Populasi awal</td><td><code>[Individual(Individual.create_gnome()) for _ in range(POPULATION_SIZE)]</code></td></tr>
+              <tr><td>Evaluasi fitness</td><td><code>cal_fitness()</code>, <code>sorted(population, key=lambda x: x.fitness)</code></td></tr>
+              <tr><td>Elitism</td><td><code>new_generation.extend(population[:s])</code></td></tr>
+              <tr><td>Seleksi induk</td><td><code>random.choice(population[:50])</code></td></tr>
+              <tr><td>Crossover &amp; mutasi</td><td><code>mate()</code>: r &lt; 0.45 Induk 1, r &lt; 0.90 Induk 2, sisanya <code>mutated_genes()</code></td></tr>
+            </tbody></table>
+          </div>
+        </section>
+        <section class="card">
+          <h2>Parameter</h2>
+          <div class="set">
+            <label>Populasi<output id="nO"></output><input type="range" id="n" min="10" max="5000" step="10" value="500"></label>
+            <label>Mutasi per gen<output id="mutO"></output><input type="range" id="mut" min="0" max="60" step="1" value="10"></label>
+            <label>Elitism<output id="eliO"></output><input type="range" id="eli" min="0" max="50" step="1" value="10"></label>
+            <label>Kolam induk<output id="poolO"></output><input type="range" id="pool" min="2" max="200" step="1" value="50"></label>
+          </div>
+          <div class="presets" id="presets"></div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PUNCAK ================= -->
+  <section class="page" id="page-puncak" hidden>
+    <header class="ph">
+      <h1>Puncak Palsu</h1><span class="tag">GA vs hill climbing</span>
+      <div class="tools">
+        <label class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M2 20l6.5-11 4 6.5 3-4.5L22 20z"/></svg><select id="pkLand" aria-label="Lanskap"><option value="rastrigin">Rastrigin (banyak bukit)</option><option value="schwefel">Schwefel (menipu)</option><option value="gunung">Pegunungan acak</option></select></label>
+        <button type="button" class="pri" id="pkPlay">Mulai</button>
+        <button type="button" class="rb" id="pkStep" title="Langkah 1 generasi" aria-label="Langkah 1 generasi"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5v14l9-7z"/><rect x="16" y="5" width="2.5" height="14" rx="1"/></svg></button>
+        <button type="button" class="rb" id="pkReset" title="Reset" aria-label="Reset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.6"/><path d="M4 4v4.6h4.6"/></svg></button>
+        <div class="seg" role="radiogroup" aria-label="Kecepatan">
+          <label><input type="radio" name="pkspd" value="lambat" checked><span>Lambat</span></label>
+          <label><input type="radio" name="pkspd" value="sedang"><span>Sedang</span></label>
+          <label><input type="radio" name="pkspd" value="cepat"><span>Cepat</span></label>
+        </div>
+      </div>
+    </header>
+    <div class="srow">
+      <div class="stat"><div class="sl"><span class="ico" style="background:rgba(10,132,255,.25);color:#5fb0ff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 17l5-5 4 4 7-8"/></svg></span>Generasi</div><b id="pkGen">–</b><small id="pkGenS">jatah evaluasi GA = pendaki</small></div>
+      <div class="stat"><div class="sl"><span class="ico" style="background:rgba(255,214,10,.22);color:var(--yel)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 21l1.6-7L2 9.2l7.1-.6z"/></svg></span>GA terbaik</div><b id="pkGa">–</b><small id="pkGaS">ketinggian (puncak sejati = 100)</small></div>
+      <div class="stat"><div class="sl"><span class="ico" style="background:rgba(255,159,10,.22);color:#ffb340"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="5" r="2"/><path d="M12 8v6l-3 6M12 14l3 6M8 11h8"/></svg></span>Pendaki tunggal</div><b id="pkHc">–</b><small id="pkHcS">hill climbing</small></div>
+      <div class="stat"><div class="sl"><span class="ico" style="background:rgba(48,209,88,.22);color:var(--ok)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="6" cy="7" r="2"/><circle cx="17" cy="6" r="2"/><circle cx="9" cy="17" r="2"/><circle cx="18" cy="16" r="2"/></svg></span>Keragaman populasi</div><b id="pkDiv">–</b><small>sebaran individu di peta</small></div>
+    </div>
+    <div class="prow">
+      <section class="card">
+        <div class="hd"><h2>Lanskap fitness</h2><div class="legend"><span><i style="background:#fff;border-radius:50%"></i>Individu GA</span><span><i style="background:var(--yel);border-radius:50%"></i>GA terbaik</span><span><i style="background:var(--p2);border-radius:50%"></i>Pendaki</span><span><i style="border:2px solid var(--ok);border-radius:50%"></i>Puncak sejati</span></div></div>
+        <div class="fig mapfig grow" id="pkMapFig"><canvas id="pkMap"></canvas><div class="tip" id="pkTip"></div></div>
+        <div class="hd"><p class="note">Makin terang = makin tinggi. Klik peta untuk memindahkan titik awal pendaki.</p><label class="chk"><input type="checkbox" id="pkShow" checked>Tampilkan puncak sejati</label></div>
+      </section>
+      <div class="col">
+        <section class="card grow">
+          <div class="hd"><h2>Ketinggian terbaik per generasi</h2><div class="legend"><span><i style="background:var(--yel)"></i>GA</span><span><i style="background:var(--p2)"></i>Pendaki</span><span><i style="background:var(--ok)"></i>Puncak sejati</span></div></div>
+          <div class="fig grow" id="pkChartFig"><svg id="pkChart"></svg><div class="vline" id="pkV"></div><div class="tip" id="pkT"></div></div>
+          <div class="narr" id="pkNarr"></div>
+        </section>
+        <section class="card">
+          <h2>Parameter</h2>
+          <div class="set">
+            <label>Populasi<output id="pkNO"></output><input type="range" id="pkN" min="6" max="300" step="2" value="60"></label>
+            <label>Peluang mutasi<output id="pkPmO"></output><input type="range" id="pkPm" min="0" max="100" step="1" value="25"></label>
+            <label>Lompatan mutasi<output id="pkSgO"></output><input type="range" id="pkSg" min="1" max="40" step="1" value="8"></label>
+            <label>Ukuran turnamen<output id="pkKO"></output><input type="range" id="pkK" min="2" max="10" step="1" value="3"></label>
+          </div>
+          <div class="presets" id="pkPre"></div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= KEPITING ================= -->
+  <section class="page" id="page-kepiting" hidden>
+    <header class="ph">
+      <h1>Gaya Jalan Robot Kepiting</h1><span class="tag">evolusi parameter servo</span>
+      <div class="tools">
+        <label class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 8l4 2M4 16l4-2M20 8l-4 2M20 16l-4-2"/><ellipse cx="12" cy="12" rx="4" ry="3"/></svg><select id="kpLegs" aria-label="Jumlah kaki"><option value="4" selected>8 kaki (16 servo)</option><option value="3">6 kaki (12 servo)</option><option value="2">4 kaki (8 servo)</option></select></label>
+        <button type="button" class="pri" id="kpPlay">Mulai evolusi</button>
+        <button type="button" class="rb" id="kpStep" title="Langkah 1 generasi" aria-label="Langkah 1 generasi"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5v14l9-7z"/><rect x="16" y="5" width="2.5" height="14" rx="1"/></svg></button>
+        <button type="button" class="rb" id="kpReset" title="Reset" aria-label="Reset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.6"/><path d="M4 4v4.6h4.6"/></svg></button>
+        <div class="seg" role="radiogroup" aria-label="Kecepatan evolusi">
+          <label><input type="radio" name="kpspd" value="lambat"><span>Lambat</span></label>
+          <label><input type="radio" name="kpspd" value="sedang" checked><span>Sedang</span></label>
+          <label><input type="radio" name="kpspd" value="cepat"><span>Cepat</span></label>
+        </div>
+      </div>
+    </header>
+    <div class="srow">
+      <div class="stat"><div class="sl"><span class="ico" style="background:rgba(10,132,255,.25);color:#5fb0ff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 17l5-5 4 4 7-8"/></svg></span>Generasi</div><b id="kpGen">–</b><small id="kpGenS">tiap individu diuji di simulasi</small></div>
+      <div class="stat"><div class="sl"><span class="ico" style="background:rgba(48,209,88,.22);color:var(--ok)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 12h16M14 6l6 6-6 6"/></svg></span>Jarak juara</div><b id="kpDist">–</b><small id="kpDistS">lebar badan dalam 6 detik</small></div>
+      <div class="stat"><div class="sl"><span class="ico" style="background:rgba(255,159,10,.22);color:#ffb340"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 20h16M7 20l5-14 5 14"/></svg></span>Stabil</div><b id="kpStab">–</b><small>waktu tertopang kedua sisi</small></div>
+      <div class="stat"><div class="sl"><span class="ico" style="background:rgba(255,55,95,.22);color:#ff7a98"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 12c2.5-6 5-6 7.5 0s5 6 7.5 0 3.5-4 5-2"/></svg></span>Frekuensi langkah</div><b id="kpFreq">–</b><small>semua servo berayun bersama</small></div>
+    </div>
+    <div class="prow">
+      <section class="card">
+        <div class="hd"><h2 id="kpTitle">Simulasi individu terbaik</h2><div class="legend"><span><i style="background:#5fb0ff;border-radius:50%"></i>Servo</span><span><i style="background:var(--ok);border-radius:50%"></i>Kaki menapak</span></div></div>
+        <div class="fig simfig grow" id="kpSimFig"><canvas id="kpSim"></canvas><div class="hud" id="kpHud"></div><div class="hud2" id="kpHud2"></div></div>
+        <div class="minis" id="kpMinis"></div>
+        <p class="note">Tampak depan: kepiting berjalan menyamping ke kanan. Klik kandidat untuk melihatnya di layar utama, grafik servo, dan kode Arduino.</p>
+      </section>
+      <div class="col">
+        <section class="card grow">
+          <div class="hd"><h2 id="kpTabT">Fitness per generasi</h2><div class="tabs" id="kpTabs"><button type="button" class="on" data-p="kpPChart">Grafik</button><button type="button" data-p="kpPServo">Servo</button><button type="button" data-p="kpPCode">Arduino</button></div></div>
+          <div class="pane grow" id="kpPChart"><div class="legend"><span><i style="background:var(--ok)"></i>Terbaik</span><span><i style="background:var(--mut)"></i>Rata-rata</span></div><div class="fig grow" id="kpChartFig"><svg id="kpChart"></svg><div class="vline" id="kpV"></div><div class="tip" id="kpT"></div></div></div>
+          <div class="pane grow" id="kpPServo" hidden><div class="legend"><span><i style="background:#5fb0ff"></i>Servo pangkal (naik-turun kaki)</span><span><i style="background:var(--p2)"></i>Servo lutut</span></div><div class="fig grow" id="kpServoFig"><canvas id="kpServo"></canvas></div></div>
+          <div class="pane grow" id="kpPCode" hidden><div class="hd"><p class="note">Sketsa untuk Arduino + driver servo PCA9685 (16 kanal).</p><button type="button" class="tag" id="kpCopy" style="cursor:pointer;color:#fff">Salin kode</button></div><pre class="grow" id="kpCode"></pre></div>
+        </section>
+        <section class="card">
+          <h2>Parameter</h2>
+          <div class="set">
+            <label>Populasi<output id="kpNO"></output><input type="range" id="kpN" min="10" max="120" step="2" value="40"></label>
+            <label>Peluang mutasi gen<output id="kpPmO"></output><input type="range" id="kpPm" min="0" max="60" step="1" value="12"></label>
+            <label>Besar mutasi<output id="kpSgO"></output><input type="range" id="kpSg" min="1" max="40" step="1" value="10"></label>
+            <label>Elit (dipertahankan)<output id="kpEO"></output><input type="range" id="kpE" min="0" max="10" step="1" value="2"></label>
+          </div>
+          <div class="presets" id="kpPre"></div>
+        </section>
+      </div>
+    </div>
+  </section>
+  </main>
+</div>
+
+<div class="modal" id="help" hidden>
+  <div class="box">
+    <button class="rb x" id="helpX" aria-label="Tutup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <h2>Panduan Lab Algoritma Genetika</h2>
+    <p><b>Pencocokan Kata</b>: program dari modul sesi 9. Tiap gen adalah huruf; fitness = jumlah huruf yang salah. Cocok untuk melihat seleksi, crossover, mutasi, dan elitism langkah demi langkah.</p>
+    <p><b>Puncak Palsu</b>: individu berupa titik (x, y) di peta. Pendaki tunggal (hill climbing) hanya melangkah ke tempat yang lebih tinggi, sehingga mudah berhenti di puncak palsu. Populasi GA menjelajah banyak bukit sekaligus. Coba preset "Tanpa mutasi" untuk melihat GA ikut terjebak.</p>
+    <p><b>Gaya Jalan Robot Kepiting</b>: tiap kaki punya 2 servo yang berayun mengikuti gelombang sinus. Gen = offset, amplitudo, dan fase tiap servo, plus satu frekuensi. Tidak ada rumus untuk "gaya jalan terbaik"; fitness hanya bisa didapat dengan menjalankan simulasi. Model ini sederhana (2D, tampak depan), jadi hasilnya titik awal untuk robot sungguhan, bukan nilai final.</p>
+    <p><b>Pintasan</b>: Spasi mulai/jeda · panah kanan 1 generasi · R reset · 1/2/3 kecepatan (halaman kata).</p>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script src="kata.js"></script>
+<script src="puncak.js"></script>
+<script src="kepiting.js"></script>
+</body>
+</html>
